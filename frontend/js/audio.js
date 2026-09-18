@@ -35,6 +35,53 @@ export const AudioManager = {
   },
 
   async startCapturingAudio() {
+    // Android production APKs use a native recorder. This avoids WebView
+    // getUserMedia/MediaRecorder audio-source conflicts on some Android devices.
+    if (window.NirmaanAndroidAudio) {
+      const result = await new Promise((resolve) => {
+        let settled = false;
+        const finish = (value) => {
+          if (settled) return;
+          settled = true;
+          window.__nirmaanNativeMicPermission = null;
+          resolve(value);
+        };
+
+        window.__nirmaanNativeMicPermission = (granted) => {
+          if (!granted) {
+            finish("permission_denied");
+            return;
+          }
+          try {
+            finish(window.NirmaanAndroidAudio.startRecording());
+          } catch (e) {
+            finish("error:" + (e.message || "Could not start audio source"));
+          }
+        };
+
+        try {
+          const response = window.NirmaanAndroidAudio.startRecording();
+          if (response !== "permission_required") finish(response);
+        } catch (e) {
+          finish("error:" + (e.message || "Could not start audio source"));
+        }
+      });
+
+      if (result === "started") {
+        this.isCapturingAudio = true;
+        this.mediaRecorder = null;
+        this.mediaStream = null;
+        return;
+      }
+      if (result === "permission_denied") {
+        throw new Error("Microphone permission was denied.");
+      }
+      if (String(result).startsWith("error:")) {
+        throw new Error(String(result).slice(6));
+      }
+      throw new Error("Could not start audio source");
+    }
+
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
       throw new Error("Microphone recording is not supported in this browser.");
     }
@@ -54,9 +101,29 @@ export const AudioManager = {
     this.mediaRecorder.start();
     this.isCapturingAudio = true;
   },
-
   /** Resolves with the recorded audio Blob (real voice, not simulated). */
   stopCapturingAudio() {
+    if (window.NirmaanAndroidAudio) {
+      return new Promise((resolve, reject) => {
+        try {
+          const result = window.NirmaanAndroidAudio.stopRecording();
+          if (!String(result).startsWith("ok:")) {
+            reject(new Error(String(result).replace(/^error:/, "") || "Recording failed."));
+            return;
+          }
+          const base64 = String(result).slice(3);
+          const binary = atob(base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          this.isCapturingAudio = false;
+          resolve(new Blob([bytes], { type: "audio/mp4" }));
+        } catch (e) {
+          this.isCapturingAudio = false;
+          reject(e);
+        }
+      });
+    }
+
     return new Promise((resolve, reject) => {
       if (!this.mediaRecorder || !this.isCapturingAudio) {
         reject(new Error("Not currently recording."));
@@ -80,7 +147,6 @@ export const AudioManager = {
       }
     });
   },
-
   init() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -92,6 +158,14 @@ export const AudioManager = {
   },
 
   startListening(onResult, onEnd, lang = "hi-IN") {
+    // On Android, recording is handled by the native bridge. Do not also start
+    // Web Speech recognition because it can open a second microphone session and
+    // cause MediaRecorder to fail with "Could not start audio source".
+    if (window.NirmaanAndroidAudio) {
+      this.isRecording = true;
+      return;
+    }
+
     if (!this.recognition) {
       this.init();
     }
