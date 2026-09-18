@@ -1,0 +1,707 @@
+/* ==========================================================================
+   NIRMAAN — DARK GOLD MOBILE DESIGN SYSTEM
+   UI reference: artisan mobile app screens supplied by the user.
+   This file intentionally keeps the existing HTML/JS contract intact.
+   ========================================================================== */
+
+:root {
+  --color-terracotta: #E0AA4F;
+  --color-terracotta-dark: #F0C76A;
+  --color-terracotta-light: rgba(224,170,79,.12);
+
+  --color-forest: #D8A447;
+  --color-forest-light: #E8BB62;
+  --color-forest-bg: rgba(224,170,79,.10);
+
+  --color-sand: #191615;
+  --color-sand-dark: #211D1B;
+  --color-sand-border: #352F2B;
+
+  --color-gold: #E9B85A;
+  --color-gold-light: #FFF0BF;
+  --color-gold-dark: #B88325;
+
+  --color-charcoal: #0D0C0B;
+  --color-text-main: #F2E9DC;
+  --color-text-muted: #9C9389;
+  --color-text-light: #766E66;
+
+  --color-surface: #171514;
+  --color-surface-elevated: #211D1B;
+  --color-border: #332D29;
+
+  --color-success: #D6B15D;
+  --color-success-bg: rgba(214,177,93,.12);
+  --color-warning: #E0A24C;
+  --color-warning-bg: rgba(224,162,76,.12);
+  --color-danger: #D87964;
+  --color-danger-bg: rgba(216,121,100,.12);
+  --color-info: #B79C6A;
+  --color-info-bg: rgba(183,156,106,.12);
+
+  --font-family-base: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Noto Sans Devanagari", "Noto Sans", sans-serif;
+  --font-family-heading: Georgia, "Times New Roman", "Noto Serif",
+    "Noto Serif Devanagari", serif;
+
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-pill: 9999px;
+
+  --shadow-sm: 0 4px 14px rgba(0,0,0,.22);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.30);
+  --shadow-lg: 0 18px 45px rgba(0,0,0,.42);
+  --shadow-float: 0 8px 24px rgba(224,170,79,.24);
+
+  --transition-fast: .15s ease;
+  --transition-normal: .25s ease;
+  --transition-smooth: .35s cubic-bezier(.16,1,.3,1);
+}
+
+* {
+  box-sizing: border-box !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  background: #0D0C0B !important;
+  color: var(--color-text-main) !important;
+}
+
+body {
+  font-family: var(--font-family-base) !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow-x: hidden !important;
+}
+
+/* --------------------------------------------------------------------------
+   APP SHELL
+   -------------------------------------------------------------------------- */
+
+.app-container {
+  width: 100% !important;
+  max-width: 378px !important;
+  height: 806px !important;
+  max-height: 100vh !important;
+  background:
+    radial-gradient(circle at 78% 7%, rgba(224,170,79,.055), transparent 24%),
+    linear-gradient(180deg, #100F0E 0%, #0D0C0B 100%) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 22px 70px rgba(0,0,0,.55) !important;
+  overflow: hidden !important;
+}
+
+@media (max-width: 500px) {
+  .app-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+  }
+}
+
+.device-toggle-bar {
+  display: none !important;
+}
+
+.app-header {
+  display: none !important;
+}
+
+.app-content {
+  background: transparent !important;
+  padding: 28px 26px 92px !important;
+  overflow-y: auto !important;
+  scrollbar-width: none;
+}
+
+.app-content::-webkit-scrollbar {
+  display: none;
+}
+
+.view-container {
+  color: var(--color-text-main) !important;
+}
+
+.section-header {
+  margin: 0 0 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.section-title {
+  color: #E7C36F !important;
+  font-family: var(--font-family-heading) !important;
+  font-size: 20px !important;
+  font-weight: 400 !important;
+  letter-spacing: .1px !important;
+}
+
+/* --------------------------------------------------------------------------
+   BUTTONS / INPUTS
+   -------------------------------------------------------------------------- */
+
+.btn {
+  border-radius: 12px !important;
+  min-height: 42px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: .05px !important;
+  transition: transform .15s ease, opacity .15s ease, background .15s ease !important;
+}
+
+.btn:active {
+  transform: scale(.98) !important;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #F0C76A 0%, #DFA94F 100%) !important;
+  color: #17120C !important;
+  border: 0 !important;
+  box-shadow: 0 6px 18px rgba(224,170,79,.18) !important;
+}
+
+.btn-secondary,
+.btn-sand {
+  background: #211D1B !important;
+  color: #E8DFD4 !important;
+  border: 1px solid #3A332E !important;
+}
+
+.btn-outline {
+  background: transparent !important;
+  color: #E7B85C !important;
+  border: 1px solid #B58A3B !important;
+}
+
+.btn-lg {
+  min-height: 48px !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+}
+
+input,
+textarea,
+select {
+  background: #1D1A18 !important;
+  color: #F0E8DE !important;
+  border: 1px solid #3A332E !important;
+  border-radius: 10px !important;
+  outline: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #766E66 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #B98B3B !important;
+  box-shadow: 0 0 0 2px rgba(224,170,79,.08) !important;
+}
+
+select option {
+  background: #1A1715 !important;
+  color: #F0E8DE !important;
+}
+
+/* --------------------------------------------------------------------------
+   HOME
+   -------------------------------------------------------------------------- */
+
+.hero-card {
+  background:
+    radial-gradient(circle at 82% 20%, rgba(224,170,79,.14), transparent 24%),
+    linear-gradient(145deg, #211C18, #141211) !important;
+  border: 1px solid #342C25 !important;
+  border-left: 1px solid #342C25 !important;
+  border-radius: 17px !important;
+  padding: 20px !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.hero-greeting {
+  color: #F0D083 !important;
+  font-family: var(--font-family-heading) !important;
+  font-size: 22px !important;
+  font-weight: 400 !important;
+}
+
+.hero-subtitle {
+  color: #A59B90 !important;
+}
+
+.quick-actions-grid {
+  gap: 10px !important;
+}
+
+.action-tile {
+  background: #181615 !important;
+  border: 1px solid #302A26 !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.action-tile-icon {
+  color: #DFA84F !important;
+}
+
+/* --------------------------------------------------------------------------
+   CARDS
+   -------------------------------------------------------------------------- */
+
+.card {
+  background: linear-gradient(145deg, #1B1917, #151312) !important;
+  color: var(--color-text-main) !important;
+  border: 1px solid #302A27 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 5px 18px rgba(0,0,0,.20) !important;
+}
+
+.card p,
+.card span,
+.card div,
+.card label,
+.card h1,
+.card h2,
+.card h3,
+.card h4 {
+  color: inherit;
+}
+
+.attr-pill,
+.attributes-grid > *,
+.price-tier-card,
+.market-range-box {
+  background: #211D1B !important;
+  border-color: #3A332E !important;
+  color: #E9E0D5 !important;
+}
+
+/* --------------------------------------------------------------------------
+   MY LISTINGS / PRODUCT CARDS
+   -------------------------------------------------------------------------- */
+
+#my-products-full-list,
+#home-recent-products,
+#marketplace-products-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 9px !important;
+}
+
+.product-card-horizontal,
+.mkt-product-card {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 78% 12%, rgba(224,170,79,.10), transparent 23%),
+    linear-gradient(145deg, #211F1D, #191716) !important;
+  border: 1px solid #34302D !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.product-card-horizontal:active,
+.mkt-product-card:active {
+  transform: scale(.985) !important;
+}
+
+.prod-thumb,
+.mkt-img-wrap {
+  width: calc(100% - 22px) !important;
+  height: 112px !important;
+  margin: 10px 11px 0 !important;
+  border-radius: 0 !important;
+  object-fit: cover !important;
+  background: #121110 !important;
+}
+
+.mkt-img-wrap {
+  overflow: hidden !important;
+}
+
+.mkt-img-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+.prod-meta,
+.mkt-card-body {
+  padding: 7px 10px 10px !important;
+  min-width: 0 !important;
+}
+
+.prod-meta h4,
+.mkt-card-title {
+  color: #EEE5D9 !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  margin: 0 0 3px !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.prod-meta p,
+.mkt-card-body > div:not(.mkt-card-title) {
+  color: #8E857C !important;
+  font-size: 9px !important;
+  line-height: 1.2 !important;
+}
+
+.prod-price,
+.mkt-card-price {
+  color: #E6BA5C !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+.prod-price-status {
+  margin-top: 2px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.status-badge {
+  background: rgba(224,170,79,.10) !important;
+  color: #C7A05A !important;
+  border: 1px solid #4B3C27 !important;
+}
+
+/* --------------------------------------------------------------------------
+   BOTTOM NAVIGATION
+   -------------------------------------------------------------------------- */
+
+.bottom-nav {
+  height: 69px !important;
+  background: rgba(18,16,15,.97) !important;
+  border-top: 1px solid #292522 !important;
+  box-shadow: 0 -8px 25px rgba(0,0,0,.24) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+.nav-item {
+  color: #706860 !important;
+  font-size: 9px !important;
+  font-weight: 500 !important;
+  gap: 3px !important;
+}
+
+.nav-item.active {
+  color: #DDB35E !important;
+}
+
+.nav-icon {
+  filter: grayscale(.45) !important;
+  font-size: 15px !important;
+}
+
+.nav-item.active .nav-icon {
+  filter: none !important;
+}
+
+.nav-fab {
+  width: 51px !important;
+  height: 51px !important;
+  top: -21px !important;
+  background: linear-gradient(180deg,#F0C76A,#DDA64A) !important;
+  color: #21170A !important;
+  border: 0 !important;
+  box-shadow: 0 7px 22px rgba(224,170,79,.30) !important;
+}
+
+.nav-fab .fab-icon {
+  font-size: 25px !important;
+  font-weight: 400 !important;
+}
+
+/* The supplied reference has four bottom actions around the FAB.
+   Keep marketplace available elsewhere, but remove it from the primary bar. */
+.bottom-nav .nav-item[data-view="marketplace"] {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   CREATE FLOW
+   -------------------------------------------------------------------------- */
+
+.create-stepper,
+.stepper {
+  background: transparent !important;
+}
+
+.stepper-step {
+  color: #716960 !important;
+}
+
+.stepper-step.active,
+.stepper-step.completed {
+  color: #E2B65C !important;
+}
+
+.stepper-dot {
+  background: #302A26 !important;
+  border-color: #51473D !important;
+}
+
+.stepper-step.active .stepper-dot,
+.stepper-step.completed .stepper-dot {
+  background: #DFAA4F !important;
+  border-color: #DFAA4F !important;
+  color: #19130B !important;
+}
+
+.create-step-container > .card,
+.create-step-container .card {
+  background: linear-gradient(145deg,#1D1A18,#151312) !important;
+}
+
+.viewer-container,
+.image-viewer,
+.viewer-image-wrap {
+  background: #151311 !important;
+  border-color: #332D29 !important;
+}
+
+.viewer-tab-bar,
+.lang-tab-bar,
+.pricing-tabs {
+  background: #171513 !important;
+  border-color: #332D29 !important;
+}
+
+.viewer-tab,
+.lang-tab,
+.pricing-tab {
+  color: #80776D !important;
+  background: transparent !important;
+}
+
+.viewer-tab.active,
+.lang-tab.active,
+.pricing-tab.active {
+  color: #E6B95D !important;
+  border-color: #D9A94E !important;
+}
+
+/* --------------------------------------------------------------------------
+   SCHEMES
+   -------------------------------------------------------------------------- */
+
+.scheme-sarthi-card {
+  background:
+    radial-gradient(circle at 82% 14%, rgba(224,170,79,.09), transparent 25%),
+    #1A1816 !important;
+  border: 1px solid #37312D !important;
+  color: #EEE4D7 !important;
+  border-radius: 12px !important;
+}
+
+.scheme-sarthi-card-title {
+  color: #EEE4D7 !important;
+}
+
+.scheme-sarthi-card-oneliner {
+  color: #91877D !important;
+}
+
+.scheme-sarthi-card-play {
+  background: #24201C !important;
+  border-color: #8E6B32 !important;
+  color: #E4B85B !important;
+}
+
+/* --------------------------------------------------------------------------
+   AUTH / SPLASH / SCHEME PORTAL
+   -------------------------------------------------------------------------- */
+
+#splash-screen,
+#auth-screen,
+#schemes-portal-screen {
+  background:
+    radial-gradient(circle at 78% 8%, rgba(224,170,79,.10), transparent 24%),
+    linear-gradient(180deg,#100F0E,#0C0B0A) !important;
+  color: #EFE6DB !important;
+}
+
+#splash-screen .splash-title,
+#auth-screen h2,
+#schemes-portal-screen h2 {
+  color: #E9C774 !important;
+  font-family: var(--font-family-heading) !important;
+  font-weight: 400 !important;
+}
+
+#auth-screen p,
+#schemes-portal-screen p {
+  color: #91877D !important;
+}
+
+.auth-tabs {
+  background: #1B1816 !important;
+  border-color: #332D29 !important;
+}
+
+.auth-tab {
+  color: #81786E !important;
+}
+
+.auth-tab.active {
+  background: #DDA94E !important;
+  color: #1B140C !important;
+}
+
+.auth-field label {
+  color: #C4B8AA !important;
+}
+
+.auth-field input,
+.auth-field select {
+  background: #1B1816 !important;
+  color: #F0E7DC !important;
+  border-color: #39322C !important;
+}
+
+.schemes-list {
+  scrollbar-width: none;
+}
+
+.schemes-list::-webkit-scrollbar {
+  display: none;
+}
+
+#scheme-mini-player {
+  background: #191512 !important;
+  border-top: 1px solid #392F25 !important;
+}
+
+/* --------------------------------------------------------------------------
+   MODALS
+   -------------------------------------------------------------------------- */
+
+.modal-overlay {
+  background: rgba(0,0,0,.72) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.modal-sheet {
+  background:
+    linear-gradient(145deg,#211D1A,#151311) !important;
+  color: #EEE6DC !important;
+  border: 1px solid #3A332D !important;
+  box-shadow: 0 20px 55px rgba(0,0,0,.55) !important;
+}
+
+.modal-sheet h3,
+.modal-sheet label {
+  color: #EEE4D8 !important;
+}
+
+.modal-sheet p {
+  color: #958B80 !important;
+}
+
+/* --------------------------------------------------------------------------
+   PRICING / CATALOG
+   -------------------------------------------------------------------------- */
+
+.calc-input-group {
+  border-color: #332D29 !important;
+}
+
+.calc-label-row,
+.calc-input-group > label {
+  color: #C8BDB0 !important;
+}
+
+.calc-slider {
+  accent-color: #DFAA4F !important;
+}
+
+.price-tier-card.highlight {
+  background: linear-gradient(145deg,#332617,#241B12) !important;
+  border-color: #B78637 !important;
+  box-shadow: 0 0 0 1px rgba(224,170,79,.10) !important;
+}
+
+.tier-title,
+.tier-value {
+  color: #E9DDCF !important;
+}
+
+.tier-value {
+  color: #E4B657 !important;
+}
+
+.voice-command-bar {
+  background: #211D1B !important;
+  border: 1px solid #39312B !important;
+  color: #D8CABB !important;
+}
+
+.market-range-box {
+  background:
+    radial-gradient(circle at 90% 10%,rgba(224,170,79,.09),transparent 30%),
+    #211D1B !important;
+  border: 1px solid #3C342D !important;
+}
+
+.market-range-val {
+  color: #E7B95C !important;
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE SAFETY
+   -------------------------------------------------------------------------- */
+
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit !important;
+}
+
+@media (max-width: 380px) {
+  .app-content {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  #my-products-full-list,
+  #home-recent-products,
+  #marketplace-products-grid {
+    gap: 7px !important;
+  }
+}
