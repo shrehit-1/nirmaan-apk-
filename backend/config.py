@@ -15,7 +15,15 @@ load_dotenv(os.path.join(ROOT_DIR, ".env"))
 HOST = "0.0.0.0"
 PORT = 8000
 APP_NAME = "NIRMAAN"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1-memory-safe"
+
+# Keep image processing inside Render free-tier memory limits.
+# 1024px is sufficient for catalog generation and dramatically reduces
+# Pillow/OpenCV/ONNX peak RAM usage.
+MAX_PROCESS_IMAGE_DIM = int(os.getenv("MAX_PROCESS_IMAGE_DIM", "1024"))
+# Heavy rembg/ONNX segmentation is opt-in. Render free instances should
+# keep this disabled to avoid loading a large neural segmentation model.
+ENABLE_HEAVY_SEGMENTATION = os.getenv("ENABLE_HEAVY_SEGMENTATION", "0").strip().lower() in {"1", "true", "yes"}
 
 # AI Image Generation API Configuration
 GEMINI_API_KEY = (os.getenv("GEMINI_API_KEY", "").strip() or os.getenv("GOOGLE_API_KEY", "").strip())
