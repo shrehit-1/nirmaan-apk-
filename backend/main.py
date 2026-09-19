@@ -9,7 +9,10 @@ from fastapi.responses import FileResponse, JSONResponse
 import os
 import shutil
 import uuid
+import logging
 from typing import List, Optional, Dict, Any
+
+logger = logging.getLogger("nirmaan.api")
 
 from .config import FRONTEND_DIR, UPLOADS_DIR, APP_NAME, APP_VERSION
 from .models.schemas import (
@@ -124,7 +127,9 @@ async def upload_product_photo(
             "message": "Your professional product photo is ready."
         }
     except Exception as e:
-        # Fallback safe response (Never expose raw API error to artisan UI)
+        # Never expose internals to the artisan UI, but ALWAYS log the real
+        # exception so production failures are diagnosable.
+        logger.exception("Photo processing failed")
         return {
             "success": True,
             "images": [],
