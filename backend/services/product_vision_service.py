@@ -4,14 +4,16 @@ Orchestrates AI product understanding, segmentation, enhancement, background gen
 """
 import os
 import uuid
+import gc
 from typing import List, Dict, Any, Tuple
-from PIL import Image, ImageStat
+from PIL import Image, ImageStat, ImageOps
 from ..models.schemas import ImageInfo, ProductAttribute
 from .image_segmentation_service import image_segmentation_service
 from .image_enhancement_service import image_enhancement_service
 from .background_generation_service import background_generation_service
 from .image_validation_service import image_validation_service
 from .ai_image_generation_service import ai_image_generation_service
+from ..config import MAX_PROCESS_IMAGE_DIM
 
 UPLOAD_BASE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 ORIGINALS_DIR = os.path.join(UPLOAD_BASE, "originals")
@@ -98,12 +100,25 @@ class ProductVisionService:
         feature bullets, which don't exist yet at photo-upload time.)
         """
         image_id = str(uuid.uuid4())
-        orig_img = Image.open(source_image_path)
-        
-        # 1. Save / Preserve Original
-        orig_filename = f"orig_{image_id}.jpg"
-        orig_dest_path = os.path.join(ORIGINALS_DIR, orig_filename)
-        orig_img.convert("RGB").save(orig_dest_path, "JPEG", quality=92)
+        # Load the uploaded image once, correct EXIF orientation, and immediately
+        # create a bounded working copy. Phone photos can be 8-20MP; processing
+        # those dimensions through Pillow/AI/segmentation causes large RAM spikes.
+        with Image.open(source_image_path) as uploaded_img:
+            uploaded_img = ImageOps.exif_transpose(uploaded_img)
+            orig_img = uploaded_img.convert("RGB")
+            orig_filename = f"orig_{image_id}.jpg"
+            orig_dest_path = os.path.join(ORIGINALS_DIR, orig_filename)
+            # Preserve a useful original while avoiding an unbounded in-memory copy.
+            orig_img.save(orig_dest_path, "JPEG", quality=88, optimize=True)
+            if max(orig_img.size) > MAX_PROCESS_IMAGE_DIM:
+                scale = MAX_PROCESS_IMAGE_DIM / float(max(orig_img.size))
+                work_size = (max(1, int(orig_img.width * scale)), max(1, int(orig_img.height * scale)))
+                work_img = orig_img.resize(work_size, Image.Resampling.LANCZOS)
+            else:
+                work_img = orig_img.copy()
+
+        orig_img.close()
+        orig_img = work_img
         
         # 2. Visual Recognition
         visual_traits = cls.identify_product_visual_traits(orig_img)
@@ -159,35 +174,24 @@ class ProductVisionService:
 
         print(f"FINAL IMAGE PATH: {mkt_dest_path}")
 
-        # 5. "Professional Studio" variant — dramatic black background with
-        #    a glossy floor reflection and rim-light shine, generated
-        #    alongside the plain marketplace shot so it's available as a
-        #    tab immediately, no extra wait when the artisan taps it.
+        # 5. Professional Studio variant. Do NOT make a second Gemini image
+        # request here: two simultaneous/high-resolution image generations are
+        # a common cause of OOM on Render's free instance. If the marketplace
+        # image is AI-generated, reuse it as the safe studio fallback. If we
+        # used the lightweight local path, build the dark studio from the same
+        # foreground without loading a second ML model.
         studio_pro_img = None
-        if has_key:
-            try:
-                studio_pro_img = ai_image_generation_service.generate_professional_studio_image(
-                    source_image=orig_img,
-                    category=effective_category,
-                    craft_type=effective_craft
-                )
-            except Exception as e:
-                print(f"ProductVisionService caught exception generating Professional Studio image: {e}")
-                studio_pro_img = None
-
-        if studio_pro_img is None:
-            # Local fallback: reuse whatever foreground we already
-            # segmented for the marketplace fallback, or re-segment if we
-            # took the AI path for marketplace but need it here.
-            try:
-                studio_source_rgba = segmented_rgba if fallback_used else image_segmentation_service.segment_product(orig_img)
-                studio_pro_img = background_generation_service.create_professional_studio_image(
-                    foreground_rgba=studio_source_rgba
-                )
-            except Exception as e:
-                print(f"ProductVisionService local Professional Studio fallback failed: {e}")
-                studio_pro_img = marketplace_img  # last resort: don't leave the tab broken
-
+        try:
+            if fallback_used:
+                studio_source_rgba = segmented_rgba
+            else:
+                studio_source_rgba = image_segmentation_service.segment_product(orig_img)
+            studio_pro_img = background_generation_service.create_professional_studio_image(
+                foreground_rgba=studio_source_rgba
+            )
+        except Exception as e:
+            print(f"Professional Studio local generation skipped: {type(e).__name__}: {e}")
+            studio_pro_img = marketplace_img.copy()
         studio_pro_filename = f"studiopro_{image_id}.jpg"
         studio_pro_dest_path = os.path.join(STUDIO_PRO_DIR, studio_pro_filename)
         studio_pro_img.save(studio_pro_dest_path, "JPEG", quality=90)
@@ -260,6 +264,15 @@ class ProductVisionService:
                 source="visual"
             )
         ]
+
+        # Release large image buffers before the request returns.
+        try:
+            orig_img.close()
+            marketplace_img.close()
+            studio_pro_img.close()
+        except Exception:
+            pass
+        gc.collect()
 
         return images_info, attributes, visual_traits
 
