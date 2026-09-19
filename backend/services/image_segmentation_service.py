@@ -14,13 +14,29 @@ original lightweight Pillow-only heuristic so the app keeps working.
 from PIL import Image, ImageFilter
 import math
 
-try:
-    import numpy as np
-    import cv2
-    from rembg import remove as rembg_remove, new_session as rembg_new_session
-    _ADVANCED_AVAILABLE = True
-except Exception:
-    _ADVANCED_AVAILABLE = False
+from ..config import ENABLE_HEAVY_SEGMENTATION
+
+# Heavy ML segmentation is intentionally opt-in. Importing cv2/rembg/onnxruntime
+# on a small Render instance can consume a large amount of RAM even before a
+# request is processed.
+_ADVANCED_AVAILABLE = False
+np = None
+cv2 = None
+rembg_remove = None
+rembg_new_session = None
+
+if ENABLE_HEAVY_SEGMENTATION:
+    try:
+        import numpy as _np
+        import cv2 as _cv2
+        from rembg import remove as _rembg_remove, new_session as _rembg_new_session
+        np = _np
+        cv2 = _cv2
+        rembg_remove = _rembg_remove
+        rembg_new_session = _rembg_new_session
+        _ADVANCED_AVAILABLE = True
+    except Exception as e:
+        print(f"[ImageSegmentationService] Heavy segmentation disabled: {type(e).__name__}: {e}")
 
 _REMBG_SESSION = None
 
