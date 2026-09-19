@@ -9,6 +9,7 @@ import io
 import base64
 import logging
 from typing import Optional, Union
+import gc
 from PIL import Image
 
 from ..config import GEMINI_API_KEY, GEMINI_IMAGE_MODEL
@@ -172,13 +173,29 @@ class AIImageGenerationService:
         print(f"GEMINI_IMAGE_MODEL: {self.model_name}")
         print("GEMINI REQUEST STARTED")
         try:
-            # 1. Normalize input to a PIL Image (the SDK accepts PIL images directly)
+            # 1. Normalize input and cap its dimensions before sending it to Gemini.
+            # Phone photos can be huge; keeping a bounded copy prevents large peak RAM.
             if isinstance(source_image, str):
-                pil_image = Image.open(source_image).convert("RGB")
+                with Image.open(source_image) as opened:
+                    pil_image = opened.convert("RGB")
+                    max_dim = 1024
+                    if max(pil_image.size) > max_dim:
+                        scale = max_dim / float(max(pil_image.size))
+                        pil_image = pil_image.resize(
+                            (max(1, int(pil_image.width * scale)), max(1, int(pil_image.height * scale))),
+                            Image.Resampling.LANCZOS
+                        )
             else:
                 pil_image = source_image.convert("RGB")
+                max_dim = 1024
+                if max(pil_image.size) > max_dim:
+                    scale = max_dim / float(max(pil_image.size))
+                    pil_image = pil_image.resize(
+                        (max(1, int(pil_image.width * scale)), max(1, int(pil_image.height * scale))),
+                        Image.Resampling.LANCZOS
+                    )
 
-            # 2. Call Gemini's content-generation API with text + image input
+            # 2. Call Gemini's content-generation API with text + bounded image input
             response = client.models.generate_content(
                 model=self.model_name,
                 contents=[prompt, pil_image],
@@ -198,10 +215,29 @@ class AIImageGenerationService:
                         decoded_bytes = base64.b64decode(raw) if isinstance(raw, str) else raw
                         print(f"GENERATED IMAGE BYTES: YES ({len(decoded_bytes)} bytes)")
                         print("="*50 + "\n")
-                        return Image.open(io.BytesIO(decoded_bytes)).convert("RGB")
+                        result = Image.open(io.BytesIO(decoded_bytes)).convert("RGB")
+                        # Keep generated assets bounded too.
+                        if max(result.size) > 1536:
+                            scale = 1536 / float(max(result.size))
+                            result = result.resize(
+                                (max(1, int(result.width * scale)), max(1, int(result.height * scale))),
+                                Image.Resampling.LANCZOS
+                            )
+                        del decoded_bytes, raw, response
+                        try:
+                            pil_image.close()
+                        except Exception:
+                            pass
+                        gc.collect()
+                        return result
 
             print("GENERATED IMAGE BYTES: NO (No inline image data in response)")
             print("="*50 + "\n")
+            try:
+                pil_image.close()
+            except Exception:
+                pass
+            gc.collect()
             return None
 
         except Exception as e:
